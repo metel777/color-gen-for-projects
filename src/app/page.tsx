@@ -1,113 +1,209 @@
-import Image from "next/image";
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { ArrowLeftIcon } from "@radix-ui/react-icons"
+import { Dispatch, FormEvent, SetStateAction, useState } from "react"
+
+interface HSB {
+  h: number
+  s: number
+  b: number
+}
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [brand, setBrand] = useState("")
+  const [textStrong, setTextStrong] = useState("")
+  const [textWeak, setTextWeak] = useState("")
+  const [strokeStrong, setStrokeStrong] = useState("")
+  const [strokeWeak, setStrokeWeak] = useState("")
+  const [fill, setFill] = useState("")
+  const [background, setBackground] = useState("")
+
+  const [showCode, setShowCode] = useState(false)
+
+  function hexToHSB(hex: string): HSB {
+    hex = hex.replace(/^#/, "")
+    if (hex.length !== 6) {
+      throw new Error("Invalid hex color format. Expected 6 characters.")
+    }
+
+    // Convert hex to RGB
+    const r = parseInt(hex.substring(0, 2), 16) / 255
+    const g = parseInt(hex.substring(2, 4), 16) / 255
+    const b = parseInt(hex.substring(4, 6), 16) / 255
+
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const delta = max - min
+
+    // brightness
+    const brightness = max
+
+    //  saturation
+    const saturation = max === 0 ? 0 : delta / max
+
+    //  hue
+    let hue = 0
+    if (delta !== 0) {
+      switch (max) {
+        case r:
+          hue = (g - b) / delta + (g < b ? 6 : 0)
+          break
+        case g:
+          hue = (b - r) / delta + 2
+          break
+        case b:
+          hue = (r - g) / delta + 4
+          break
+      }
+      hue /= 6
+    }
+
+    return {
+      h: Math.round(hue * 360),
+      s: Math.round(saturation * 100),
+      b: Math.round(brightness * 100),
+    }
+  }
+
+  function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setShowCode(true)
+  }
+
+  if (showCode) {
+    const hsbBrand = hexToHSB(brand)
+    const hsbTextStrong = hexToHSB(textStrong)
+    const hsbTextWeak = hexToHSB(textWeak)
+    const hsbStrokeStrong = hexToHSB(strokeStrong)
+    const hsbStrokeWeak = hexToHSB(strokeWeak)
+    const hsbFill = hexToHSB(fill)
+    const hsbBackground = hexToHSB(background)
+    return (
+      <>
+        <main className=" bg-white mt-20 rounded-sm p-4 relative">
+          <Button
+            variant="outline"
+            onClick={() => setShowCode(false)}
+            className="absolute -top-10 left-0 flex gap-2"
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            {" "}
+            <ArrowLeftIcon />
+            Back
+          </Button>
+          <code>brand: {`${hsbBrand.h} ${hsbBrand.s}% ${hsbBrand.b}%"`}</code>
+          <br />
+          <code>
+            text-strong:{" "}
+            {`${hsbTextStrong.h} ${hsbTextStrong.s}% ${hsbTextStrong.b}%"`}
+          </code>
+          <br />
+          <code>
+            text-weak: {`${hsbTextWeak.h} ${hsbTextWeak.s}% ${hsbTextWeak.b}%"`}
+          </code>
+          <br />
+          <code>
+            stroke-strong:{" "}
+            {`${hsbStrokeStrong.h} ${hsbStrokeStrong.s}% ${hsbStrokeStrong.b}%"`}
+          </code>
+          <br />
+          <code>
+            stroke-weak:{" "}
+            {`${hsbStrokeWeak.h} ${hsbStrokeWeak.s}% ${hsbStrokeWeak.b}%"`}
+          </code>
+          <br />
+          <code>fill: {`${hsbFill.h} ${hsbFill.s}% ${hsbFill.b}%"`}</code>
+          <br />
+          <code>
+            background:{" "}
+            {`${hsbBackground.h} ${hsbBackground.s}% ${hsbBackground.b}%"`}
+          </code>
+          <br />
+        </main>
+      </>
+    )
+  }
+  return (
+    <div>
+      <main className=" bg-white mt-20 rounded-sm p-4">
+        <form
+          onSubmit={(e) => handleFormSubmit(e)}
+          className="w-[200px] flex flex-col gap-2 mx-auto"
+          action=""
+        >
+          <InputWithColor
+            setColor={setBrand}
+            color={brand}
+            inputName={"Brand"}
+          />
+          <InputWithColor
+            setColor={setTextStrong}
+            color={textStrong}
+            inputName={"Text strong"}
+          />
+          <InputWithColor
+            setColor={setTextWeak}
+            color={textWeak}
+            inputName={"Text weak"}
+          />
+          <InputWithColor
+            setColor={setStrokeStrong}
+            color={strokeStrong}
+            inputName={"Stroke strong"}
+          />
+          <InputWithColor
+            setColor={setStrokeWeak}
+            color={strokeWeak}
+            inputName={"Stroke weak"}
+          />
+          <InputWithColor setColor={setFill} color={fill} inputName={"Fill"} />
+          <InputWithColor
+            setColor={setBackground}
+            color={background}
+            inputName={"Background"}
+          />
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+          <Button className="bg-blue-500 hover:bg-blue-600 mt-5">
+            Proceed
+          </Button>
+        </form>
+      </main>
+      <p className="text-sm text-g.modern-500 text-center">
+        ©Yehor Brazhenko 2024
+      </p>
+    </div>
+  )
+}
+
+function InputWithColor({
+  inputName,
+  setColor,
+  color,
+}: {
+  inputName: string
+  setColor: Dispatch<SetStateAction<string>>
+  color: string
+}) {
+  return (
+    <div>
+      <label className="text-sm font-semibold" htmlFor={inputName}>
+        {inputName}
+      </label>
+      <div className="border text-sm  rounded-lg shadow-sm overflow-hidden flex items-center justify-between">
+        <input
+          onChange={(e) => setColor(e.target.value)}
+          value={color}
+          className="focus:outline-none w-[70%] p-2"
+          type="text"
+          id={inputName}
+          placeholder={`${inputName} color`}
+          required
         />
+        <div
+          style={{ backgroundColor: color ? "#" + color : "" }}
+          className={` mr-2 w-[20px] h-[20px] rounded-sm`}
+        ></div>
       </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    </div>
+  )
 }
